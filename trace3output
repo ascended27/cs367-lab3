@@ -1,0 +1,11 @@
+ERROR: Cannot free NULL pointer
+ERROR: Insufficient heap space for desired allocation
+Free blocks in Memory: 
+    0: size = 10000 
+
+ERROR: Insufficient heap space for desired allocation
+ERROR: Cannot free NULL pointer
+ERROR: Cannot free NULL pointer
+Free blocks in Memory: 
+    0: size = 10000 
+

@@ -1,0 +1,29 @@
+Implementation Notes:
+
+
+*************
+Creating trace files:
+*************
+You should create/modify trace files to help with testing your code. 
+It may be helpful to add print commands (4 0 0) before and after places where your output is different.  
+The format for trace files is described in the handout.
+
+
+*************
+Adding additional functions:
+*************
+Put the code for each of your functions in the file of the same name.  If you 
+need/want auxilliary functions, you can do this easily one of two ways:
+* add the function to the file for the function that uses it - this 
+    works well if only one of your functions needs this
+* add a new file to the library itself.  This is the recommended solution if 
+     one of your main functions use the same auxillary function.  To do this:
+     1.  Create a new file with the name of the function. 
+     2.  In the Makefile, add an entry to compile the function to an object file 
+         and add the new function to the 'ar' command (as well as the dependencies).
+         You can use one of the basic functions (mm_free for example) as a pattern.
+
+
+
+
+

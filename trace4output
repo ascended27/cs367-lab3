@@ -1,0 +1,16 @@
+Free blocks in Memory: 
+ 7928: size = 2072  
+
+Free blocks in Memory: 
+ 4000: size = 1928  
+ 6928: size = 3072  
+
+Free blocks in Memory: 
+    0: size = 3000  
+ 4000: size = 1928  
+ 7928: size = 2072  
+
+ERROR: Insufficient heap space for desired allocation
+Free blocks in Memory: 
+    0: size = 10000 
+
