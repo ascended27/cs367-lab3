@@ -136,8 +136,10 @@ mm_init() {
    int i;
    int j = 0;
 
+   //Allocate the segregated list 
    segLists = malloc(sizeof(mem_ptr)*numLists);
 
+   //Create dummy nodes for each segregated list
    for(i = 0; i < numLists; i++){
    	mem_ptr dummy = malloc(sizeof(mem_ptr));
 	dummy->minSize = listSizes[j];
@@ -149,9 +151,18 @@ mm_init() {
 	j += 2;
    } 
   
-   Heap = (mem_ptr)malloc(sizeof(mem_rec));
-   Heap->size = HEAPSIZE;  Heap->address = 0;
-   Heap->previous = Heap->next = NULL;
+   //Single Segregated List
+   //Heap = (mem_ptr)malloc(sizeof(mem_rec));
+   //Heap->size = HEAPSIZE;  Heap->address = 0;
+   //Heap->previous = Heap->next = NULL;
+  
+   //First empty block of memory 
+   mem_ptr toAdd = malloc(sizeof(mem_ptr));
+   toAdd -> next = NULL;
+   toAdd -> previous = segLists[numLists-1];
+   toAdd -> size = HEAPSIZE;
+   toAdd -> address = 0;
+   segLists[numLists-1]->next = toAdd;
 }
 
 
