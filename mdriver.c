@@ -135,34 +135,37 @@ mm_init() {
   */ 
    int i;
    int j = 0;
-
-   //Allocate the segregated list 
-   segLists = malloc(sizeof(mem_ptr)*numLists);
-
-   //Create dummy nodes for each segregated list
-   for(i = 0; i < numLists; i++){
-   	mem_ptr dummy = malloc(sizeof(mem_ptr));
-	dummy->minSize = listSizes[j];
-	dummy->maxSize = listSizes[j+1];
-	dummy->next = NULL;
-	dummy->previous = NULL;
-	dummy->size = 0;
-	segLists[i]=dummy;
-	j += 2;
-   } 
   
-   //Single Segregated List
-   //Heap = (mem_ptr)malloc(sizeof(mem_rec));
-   //Heap->size = HEAPSIZE;  Heap->address = 0;
-   //Heap->previous = Heap->next = NULL;
+   //If there is only one segregated list then no need to allocate memory for a pointer array.
+   if(numLists == 1){
+      Heap = (mem_ptr)malloc(sizeof(mem_rec));
+      Heap->size = HEAPSIZE;  Heap->address = 0;
+      Heap->previous = Heap->next = NULL;
+   } else {
+
+      //Allocate the segregated list 
+      segLists = malloc(sizeof(mem_ptr)*numLists);
+
+      //Create dummy nodes for each segregated list
+      for(i = 0; i < numLists; i++){
+         mem_ptr dummy = malloc(sizeof(mem_ptr));
+	 dummy->minSize = listSizes[j];
+	 dummy->maxSize = listSizes[j+1];
+	 dummy->next = NULL;
+	 dummy->previous = NULL;
+	 dummy->size = 0;
+	 segLists[i]=dummy;
+	 j += 2;
+      } 
   
-   //First empty block of memory 
-   mem_ptr toAdd = malloc(sizeof(mem_ptr));
-   toAdd -> next = NULL;
-   toAdd -> previous = segLists[numLists-1];
-   toAdd -> size = HEAPSIZE;
-   toAdd -> address = 0;
-   segLists[numLists-1]->next = toAdd;
+      //First empty block of memory 
+      mem_ptr toAdd = malloc(sizeof(mem_ptr));
+      toAdd -> next = NULL;
+      toAdd -> previous = segLists[numLists-1];
+      toAdd -> size = HEAPSIZE;
+      toAdd -> address = 0;
+      segLists[numLists-1]->next = toAdd;
+   }
 }
 
 
