@@ -121,9 +121,9 @@ separate segrageted list.
      break;
   }
 
-  for(i = 0; i <numLists*2;i++){
+  /*for(i = 0; i <numLists*2;i++){
   	printf("%d ",listSizes[i]);
-  }
+  }*/
 } 
 
 
@@ -138,7 +138,7 @@ mm_init() {
 
    segLists = malloc(sizeof(mem_ptr)*numLists);
 
-   for(i = 0; i < numLists; i){
+   for(i = 0; i < numLists; i++){
    	mem_ptr dummy = malloc(sizeof(mem_ptr));
 	dummy->minSize = listSizes[j];
 	dummy->maxSize = listSizes[j+1];
