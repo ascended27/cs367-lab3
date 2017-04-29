@@ -17,6 +17,8 @@
  
 typedef struct m{
     int address;  
+    int minSize;
+    int maxSize;
     int size;
     struct m *next;
     struct m *previous;

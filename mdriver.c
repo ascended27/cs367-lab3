@@ -27,7 +27,10 @@
 #define MAX_INDEX 10000
 #define DEBUG 0
 
+mem_ptr* segLists=NULL;
 mem_ptr Heap = NULL;
+int numLists = 0;
+int* listSizes;
 static mem_ptr allocs[MAX_INDEX];
 // The allocs array is what ties a numbered allocation to an area of memory.
 // It is manipulated and accessed in the "while(fscanf()" loop below to process 
@@ -86,7 +89,7 @@ main(int argc, char**argv) {
 
 
 
- get_seglist_info()
+void get_seglist_info()
 {
   /* The function get_seglist_info() must interact with the user to
 get the information about the number and sizes of the individual
@@ -95,7 +98,32 @@ type and parameter(s) of the function as needed.  Think of
 constructing an array of pointers, where each element points to a
 separate segrageted list.
   */
-  
+
+  printf("Enter the number of segmented lists followed by the size ranges starting at 1 and ending at 0 which represents anything larger.\n");
+
+  char line[1024], *p, *e;
+  long v;
+  int i = 0;
+  while (fgets(line, sizeof(line), stdin)) {
+     p = line;
+     for (p = line; ; p = e) {
+        v = strtol(p, &e, 10);
+        if (p == e)
+            break;
+        if(i == 0){
+	   numLists = v;
+	   listSizes = malloc(numLists*2*sizeof(int));
+	} else if(i > 0){
+	   listSizes[i-1] = v;
+	}
+	i++;
+     }
+     break;
+  }
+
+  for(i = 0; i <numLists*2;i++){
+  	printf("%d ",listSizes[i]);
+  }
 } 
 
 
@@ -105,7 +133,22 @@ mm_init() {
     makes that initialization assuming a single free list.
     You may need to modify this function to initialize all segregated lists properly. 
   */ 
+   int i;
+   int j = 0;
 
+   segLists = malloc(sizeof(mem_ptr)*numLists);
+
+   for(i = 0; i < numLists; i){
+   	mem_ptr dummy = malloc(sizeof(mem_ptr));
+	dummy->minSize = listSizes[j];
+	dummy->maxSize = listSizes[j+1];
+	dummy->next = NULL;
+	dummy->previous = NULL;
+	dummy->size = 0;
+	segLists[i]=dummy;
+	j += 2;
+   } 
+  
    Heap = (mem_ptr)malloc(sizeof(mem_rec));
    Heap->size = HEAPSIZE;  Heap->address = 0;
    Heap->previous = Heap->next = NULL;
