@@ -24,7 +24,8 @@ void mm_free(mem_ptr m) {
   */
 
 	//temporary pointer
-	mem_ptr* temp = m;
+	mem_ptr temp = m;
+	mem_ptr erase = NULL;
 
 	//checking if there is a single list
 	if(numLists == 1){
@@ -33,40 +34,43 @@ void mm_free(mem_ptr m) {
 
 		temp->valid = 0;
 
-		//if the previous node is free
-		if(temp->previous->valid == 0){
+
+		if(temp->previous != NULL)
+			//if the previous node is free
+			if(temp->previous->valid == 0){
 			
-			//total size of the block of memory
-			size = temp->previous->address + temp->previous->size;
+				//total size of the block of memory
+				size = temp->previous->address + temp->previous->size;
 
-			//if the total block size is equal to the address of temp
-			if(size == temp->address){
+				//if the total block size is equal to the address of temp
+				if(size == temp->address){
 
-				temp->previous->next = temp->next;
-				temp->previous->size = temp->size + temp->previous->size;
-				temp->next->previous = temp->previous;
-				temp = temp->previous;
-				free(m);
-				m = NULL;
+					erase = m;
+					temp->previous->next = temp->next;
+					temp->previous->size = temp->size + temp->previous->size;
+					temp->next->previous = temp->previous;
+					temp = temp->previous;
+					free(erase);
+					erase = NULL;
+				}
 			}
-		}
-
-		//if the next node is free
-		if(temp->next->valid == 0){
 		
-			//total size of the memory block
-			size = temp->address + temp->size;
+		if(temp->next != NULL)
+			//if the next node is free
+			if(temp->next->valid == 0){
+				//total size of the memory block
+				size = temp->address + temp->size;
 
-			//if the total block size is equal to the address of the next node
-			if(size == temp->next->address){
-			
-				temp->size = temp->size + temp->next->size;
-				temp->next->next->previous = temp;
-				temp->next = temp->next->next;
-				free(m);
-				m = NULL;
+				//if the total block size is equal to the address of the next node				
+				if(size == temp->next->address){
+					erase = temp->next;
+					temp->size = temp->size + temp->next->size;
+					temp->next->next->previous = temp;
+					temp->next = temp->next->next;
+					free(erase);
+					erase = NULL;
+				}
 			}
-		}
 	
 	}
 	else{
