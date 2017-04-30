@@ -48,8 +48,12 @@ void mm_free(mem_ptr m) {
 					erase = m;
 					temp->previous->next = temp->next;
 					temp->previous->size = temp->size + temp->previous->size;
-					temp->next->previous = temp->previous;
-					temp = temp->previous;
+					
+					if(temp->next){
+						temp->next->previous = temp->previous;
+						temp = temp->previous;
+					}
+
 					free(erase);
 					erase = NULL;
 				}
@@ -65,8 +69,12 @@ void mm_free(mem_ptr m) {
 				if(size == temp->next->address){
 					erase = temp->next;
 					temp->size = temp->size + temp->next->size;
-					temp->next->next->previous = temp;
-					temp->next = temp->next->next;
+					
+					if(temp->next->next){
+						temp->next->next->previous = temp;
+						temp->next = temp->next->next;
+					}
+
 					free(erase);
 					erase = NULL;
 				}
