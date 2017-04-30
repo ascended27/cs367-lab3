@@ -154,6 +154,7 @@ mm_init() {
 	 dummy->next = NULL;
 	 dummy->previous = NULL;
 	 dummy->size = 0;
+	 dummy->valid = 0;
 	 segLists[i]=dummy;
 	 j += 2;
       } 

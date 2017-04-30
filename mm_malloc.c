@@ -5,6 +5,7 @@
 
 extern mem_ptr Heap;
 extern int numLists;
+extern mem_ptr* segLists;
 
 
 mem_ptr
