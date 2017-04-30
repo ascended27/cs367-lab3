@@ -54,8 +54,12 @@ void mm_free(mem_ptr m) {
 						temp = temp->previous;
 					}
 
-					free(erase);
-					erase = NULL;
+					
+					if(erase != Heap){
+						free(erase);
+						erase = NULL;
+					}
+					
 				}
 			}
 		
@@ -73,10 +77,14 @@ void mm_free(mem_ptr m) {
 					if(temp->next->next){
 						temp->next->next->previous = temp;
 						temp->next = temp->next->next;
+					}else{
+						temp->next = NULL;
 					}
 
-					free(erase);
-					erase = NULL;
+					if(erase != Heap){
+						free(erase);
+						erase = NULL;
+					}
 				}
 			}
 	
