@@ -20,6 +20,7 @@ typedef struct m{
     int minSize;
     int maxSize;
     int size;
+    int valid; // 1 for true 0 for false
     struct m *next;
     struct m *previous;
 } mem_rec, *mem_ptr;
