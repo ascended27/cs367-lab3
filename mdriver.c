@@ -141,6 +141,7 @@ mm_init() {
       Heap = (mem_ptr)malloc(sizeof(mem_rec));
       Heap->size = HEAPSIZE;  Heap->address = 0;
       Heap->previous = Heap->next = NULL;
+      heap->valid = 0;
    } else {
 
       //Allocate the segregated list 
