@@ -29,6 +29,7 @@
 
 mem_ptr* segLists=NULL;
 mem_ptr Heap = NULL;
+mem_ptr AllocList = NULL;
 int numLists = 0;
 int* listSizes;
 static mem_ptr allocs[MAX_INDEX];
@@ -181,12 +182,13 @@ void mm_dump() {
   increasing address order.
    */ 
 
-   mem_ptr t = Heap;
    printf("Free blocks in Memory: \n");
-   while(t) {
-     printf("%5d: size = %-5d \n",t->address,t->size);
-     t = t->next;
-   }
+   mem_ptr p = Heap;
+   
+   while(p->next){
+	   printf("%5d: size = %-5d \n", p->address, p->size);
+	   p = p->next;
+	}
    printf("\n");
 }
 

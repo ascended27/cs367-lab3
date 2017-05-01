@@ -3,6 +3,10 @@
 
 #include "memory.h"
 
+void split(mem_ptr node, int new_size);
+mem_ptr getFirstFit(mem_ptr list, int new_size);
+mem_ptr getPosition(mem_ptr node);
+
 extern mem_ptr Heap;
 extern int numLists;
 extern mem_ptr* segLists;
@@ -76,142 +80,207 @@ mm_malloc(int size) {
 	   p -> previous = toAdd;
 	   toAdd -> address = p -> address;
 	   p -> address += new_size;
-	} else{
-		return NULL;
-	}
+	   return toAdd;
+	} 
+	return NULL;
   }
 
   // Otherwise we need to search through segmented lists
   else if(numLists > 1){
-     mem_ptr p = NULL;
-     mem_ptr curNode = NULL;
-     // Loop over segLists and check for the size list we need
-     int i;
-     
-     // Loop over the seg lists 
-     for(i = 0; i < numLists; i++){
-        p = segLists[i];
-		// Seg list is of the right range of sizes
-		if( ((p -> minSize <= new_size) && (p -> maxSize >= new_size)) || ((p -> minSize <= new_size) && (p -> maxSize == 0)) ){
-			curNode = p -> next;
-			while(curNode -> next){
+	 int i;
+	 mem_ptr p; 
+	 
+	 // Traverse the segregated list array to find the segregated list with the proper range
+	 for(i = 0; i < numLists; i++){
+		p = getFirstFit(segLists[i],new_size);
+		if(p){
+			break;
+		}
+	}
+	 
+	if(!p){
+		// Out of memory
+		exit(2);
+	} 
+	 
+	 if(p->size > new_size){
+		 //printf("Malloc(%d)\n", new_size);
+		 //printf("splitting    -> %5d: size = %-5d \n", p->address, p->size);
+		 split(p,new_size);
+	}
+	 
+	// Remove from the segregated list
+	p -> previous -> next = p -> next;
+	if(p->next)
+		 p -> next -> previous = p -> previous;
+	 
+	// Add to the Heap
+	if(Heap){
+		 mem_ptr heapPosition = getPosition(p);
+		 if(heapPosition){
+			//printf("inserting -> %5d: size = %-5d \n\n", heapPosition->address, heapPosition->size);
+			 p -> next = heapPosition;
+			 p -> previous = heapPosition -> previous;
+			 if(heapPosition -> previous)
+				heapPosition -> previous -> next = p;
+			 heapPosition -> previous = p;
+		 } else if(heapPosition == p){
+			//printf("insert at end\n\n");
+			heapPosition = Heap;
+			while(heapPosition->next){
+				heapPosition = heapPosition -> next;
+			}
+			heapPosition -> next = p;
+			p -> previous = heapPosition;
+		 }
+	}else{
+		//printf("heap is empty\n\n");
+		Heap = p;
+	}
+	 
+	printf("Heap: \n");
+	mem_ptr tmp = Heap;
+	while(tmp->next){
+		printf("%5d: size = %-5d \n", tmp->address, tmp->size);
+		tmp = tmp->next;
+	}
+	printf("\n");
+	
+	printf("Seg Lists: \n");
+	int j;
+	for(j = 0; j < numLists; j++){
+		printf("List %d:\n",j);
+		mem_ptr q = segLists[j]->next;
+		while(q){
+			printf("%5d: size = %-5d \n", q->address, q->size);
+			q = q->next;
+		}
 		
-				// A node has been found that can be used.
-				if(curNode -> size <= new_size){
-					break;
-				}	   
-				else{ // A node has not been found
-					curNode = curNode -> next;
-				}	
-			}
-			if(curNode -> size == new_size){
-						
-				   // Traverse the heap and insert in the right address position
-				   mem_ptr heapPtr = Heap;
-				   while(heapPtr->next){
-				   
-						// Insert to the left of headPtr
-						if(heapPtr -> address > curNode -> address){
-							// Remove from the seg list
-							curNode -> previous -> next = curNode -> next;
-							curNode -> next -> previous = curNode -> previous;
-
-							// Insert into the heap
-							curNode -> previous = heapPtr -> previous;
-							heapPtr -> previous -> next = curNode;
-							curNode -> next = heapPtr;
-							return curNode;
-
-						} else { // Move to the next node
-						  heapPtr = heapPtr -> next;
-					  }
-				   
-				   }
-				   // We need to insert it at the end of the list then
-				   heapPtr -> next = curNode;
-				   curNode -> previous = heapPtr;
-				   curNode -> next = NULL;
-				   return curNode;
-			} else{ // We need to split this node
-					mem_ptr toAdd = malloc(sizeof(mem_rec));
-						 
-				 // Initialize new node
-						 toAdd -> size = new_size;
-						 toAdd -> valid = 1;
-						 toAdd -> minSize = -1;
-						 toAdd -> maxSize = -1;
-				 toAdd -> address = curNode -> address;
-
-				 // Update curNode
-				 curNode -> address += new_size;
-				 curNode -> size -= new_size;
-
-				// Insert toAdd into the heap
-				// Traverse the heap and insert in the right address position
-				mem_ptr heapPtr = Heap;
-				while(heapPtr->next != NULL){
-
-							// Insert to the left of headPtr
-							if(heapPtr -> address > toAdd -> address){
-							   // Remove from the seg list
-							   toAdd -> previous -> next = toAdd -> next;
-							   toAdd -> next -> previous = toAdd -> previous;
-							   
-							   // Insert into the heap
-							   toAdd -> previous = heapPtr -> previous;
-							   heapPtr -> previous -> next = toAdd;
-							   toAdd -> next = heapPtr;
-
-							} else { // Move to the next node
-							   heapPtr = heapPtr -> next;
-							}
-				
-							// We need to insert it at the end of the list then
-							heapPtr -> next = toAdd;
-							toAdd -> previous = heapPtr;
-							toAdd -> next = NULL;
-						}
-
-				// Move curNode to the correct position in the segLists array
-				int j;
-				for(j = 0; j < numLists; j++){
-					mem_ptr tmp = segLists[j];
-					// If curNode's size is between the current segLists range then insert it here
-					if( ((tmp -> minSize <= new_size) && (tmp-> maxSize >= new_size)) || ((tmp -> minSize <= new_size) && (tmp -> maxSize == 0)) ){
-					   mem_ptr listTmp = tmp->next;
-					   while(listTmp -> next != NULL){
-						   // If listTemp address is > than curNode then insert to the left of listTemp
-						   if(listTmp -> address > curNode -> address){
-							  // Remove from it's current seglist
-							  curNode -> previous -> next = curNode -> next;
-							  if(curNode -> next != NULL){
-								 curNode -> next -> previous = curNode -> previous;
-							  }
-
-							  // Insert into new segList
-							  curNode -> next = listTmp;
-							  curNode -> previous = listTmp -> previous;
-							  listTmp -> previous -> next = curNode;
-							  listTmp -> previous = curNode;
-
-						   } else {
-							  listTmp = listTmp -> next;
-						   }
-					   }
-					}
-				}
-				 return toAdd;
-			}
-		 }	
-	 }
+	}
+	printf("\n");
+	
+	return p;
   }
         
-     
-  
-  
+  printf("Heap: \n");
+  mem_ptr tmp = Heap;
+  while(tmp->next){
+	    printf("%5d: size = %-5d \n", tmp->address, tmp->size);
+		tmp = tmp->next;
+  }
+  printf("\n");
 
   return NULL;
 }
 
+void split(mem_ptr node, int new_size){
+	// Make a new node
+	mem_ptr splitNode = malloc(sizeof(mem_rec));
+	
+	// Set split node's size
+	splitNode -> size = node -> size - new_size;
+	
+	// Set the current node's size
+	node -> size = new_size;
+	
+	// Set split node's address
+	splitNode -> address = node-> address + new_size;
+	
+	// Set the pointers
+	splitNode -> previous = node;
+	splitNode -> next = node -> next;
+	node -> next = splitNode;
+	
+	// Move splitNode if necessary
+	mem_ptr p = splitNode;
+	while(p->previous){
+		p = p->previous;
+	}
+	
+	// If splitNode's size is smaller than its seg list then 
+	// move it down to the correct list.
+	//printf("p->minSize: %d\nsplitNode -> size: %d\n",p->minSize,splitNode -> size);
+	if(p -> minSize > splitNode -> size){
+		//printf("Need Moving\n");
+		int i;
+		for(i = 0; i < numLists; i++){
+			p = segLists[i];
+			
+			// If splitNode's size fits in p's size range then 
+			// insert into this seg list
+			//printf("p->minSize: %d maxSize: %d\nsplitNode -> size: %d\n",p->minSize,p->minSize,splitNode -> size);
+			if(p -> minSize < splitNode -> size && p -> maxSize > splitNode -> size){
+				p = p->next;
+				// Seg List is not empty
+				if(p){
+					// Remove from the previous seg list
+					splitNode -> previous -> next  = splitNode -> next;
+					if(splitNode->next)
+						splitNode -> next -> previous = splitNode -> previous;
+					// Loop over the seg list and find a position to insert;
+					while(p->next){
+						if(p -> address > splitNode -> address){
+							break;
+						} else{
+							p = p->next;
+						}
+					}
+					// Insert into the new seg list
+					splitNode -> next = p;
+					splitNode -> previous = p->previous;
+					if(p->previous)
+						p -> previous -> next = splitNode;
+					p->previous = splitNode;
+				} else{ // Seg list is empty
+					// Remove from the previous seg list
+					splitNode -> previous -> next  = splitNode -> next;
+					if(splitNode->next)
+						splitNode -> next -> previous = splitNode -> previous;
+					segLists[i] -> next = splitNode;
+					splitNode -> previous = segLists[i];
+				}
+			}	
+		}
+	}
+	
+	//printf("splitNode    -> %5d: size = %-5d \n", splitNode->address, splitNode->size);
+	//printf("node         -> %5d: size = %-5d \n", node->address, node->size);
+}
 
+mem_ptr getFirstFit(mem_ptr list, int new_size){
+	//printf("getFirstFit -> %5d: size = %-5d \n", list->address, list->size);
+	mem_ptr p = list -> next;
+	//printf("p           -> %5d: size = %-5d \n\n", p->address, p->size);
+	if(!p)
+		return NULL;
+	mem_ptr toReturn = NULL;
+	while(p){
+		if( p -> size >= new_size){
+			toReturn = p;
+			break;
+		}
+		else
+			p = p->next;
+	}
+	return toReturn;
+}
+
+mem_ptr getPosition(mem_ptr node){
+	//printf("getPosition  -> %5d: size = %-5d \n", node->address, node->size);
+	mem_ptr p = Heap;
+	if(!p){
+		printf("Empty Heap\n");
+		return node;
+	}
+	while(p -> next){
+		if(p->address > node->address){
+			//printf("found -> %5d: size = %-5d \n", p->address, p->size);
+			return p;
+		}
+		else
+			p = p->next;
+	}
+	//printf("Insert at end\n\n");
+	return NULL;
+}
 
