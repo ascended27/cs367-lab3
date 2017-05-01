@@ -9,6 +9,7 @@ mem_ptr getPosition(mem_ptr node);
 
 extern mem_ptr Heap;
 extern int numLists;
+extern int probes;
 extern mem_ptr* segLists;
 
 
@@ -30,6 +31,7 @@ mm_malloc(int size) {
      segregated lists has place for the block of the given size, call
      error_msg(1) and return a NULL pointer
   */
+  
   int new_size = ALIGN(size);
 
   // Allocate a new mem_ptr for our node. Probably could do this after we find a space to insert. 
@@ -50,8 +52,10 @@ mm_malloc(int size) {
 	mem_ptr p = Heap;
 	
 	while(p->next){
-		if(p->size < new_size || p -> valid == 1 )
+		if(p->size < new_size || p -> valid == 1 ){
 			p = p->next;
+			probes++;
+		}
 		else
 			break;
 	}
@@ -100,7 +104,8 @@ mm_malloc(int size) {
 	 
 	if(!p){
 		// Out of memory
-		exit(2);
+		error_msg(2);
+		return NULL;
 	} 
 	 
 	 if(p->size > new_size){
@@ -138,38 +143,10 @@ mm_malloc(int size) {
 		Heap = p;
 	}
 	 
-	printf("Heap: \n");
-	mem_ptr tmp = Heap;
-	while(tmp->next){
-		printf("%5d: size = %-5d \n", tmp->address, tmp->size);
-		tmp = tmp->next;
-	}
-	printf("\n");
-	
-	printf("Seg Lists: \n");
-	int j;
-	for(j = 0; j < numLists; j++){
-		printf("List %d:\n",j);
-		mem_ptr q = segLists[j]->next;
-		while(q){
-			printf("%5d: size = %-5d \n", q->address, q->size);
-			q = q->next;
-		}
-		
-	}
-	printf("\n");
-	
 	return p;
   }
-        
-  printf("Heap: \n");
-  mem_ptr tmp = Heap;
-  while(tmp->next){
-	    printf("%5d: size = %-5d \n", tmp->address, tmp->size);
-		tmp = tmp->next;
-  }
-  printf("\n");
-
+ 
+  error_msg(1);
   return NULL;
 }
 
@@ -194,6 +171,7 @@ void split(mem_ptr node, int new_size){
 	// Move splitNode if necessary
 	mem_ptr p = splitNode;
 	while(p->previous){
+		probes++;
 		p = p->previous;
 	}
 	
@@ -223,6 +201,7 @@ void split(mem_ptr node, int new_size){
 							break;
 						} else{
 							p = p->next;
+							probes++;
 						}
 					}
 					// Insert into the new seg list
@@ -253,14 +232,17 @@ mem_ptr getFirstFit(mem_ptr list, int new_size){
 	//printf("p           -> %5d: size = %-5d \n\n", p->address, p->size);
 	if(!p)
 		return NULL;
+	probes++;
 	mem_ptr toReturn = NULL;
 	while(p){
 		if( p -> size >= new_size){
 			toReturn = p;
 			break;
 		}
-		else
+		else{
 			p = p->next;
+			probes++;
+		}
 	}
 	return toReturn;
 }

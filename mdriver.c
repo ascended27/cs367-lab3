@@ -121,7 +121,7 @@ separate segrageted list.
      }
      break;
   }
-
+  printf("\n");
   /*for(i = 0; i <numLists*2;i++){
   	printf("%d ",listSizes[i]);
   }*/
@@ -183,13 +183,17 @@ void mm_dump() {
    */ 
 
    printf("Free blocks in Memory: \n");
-   mem_ptr p = Heap;
-   
-   while(p->next){
-	   printf("%5d: size = %-5d \n", p->address, p->size);
-	   p = p->next;
-	}
+   int j;
+   for(j = 0; j < numLists; j++){
+	   //printf("List %d:\n",j);
+	   mem_ptr q = segLists[j]->next;
+	   while(q){
+		   printf("%5d: size = %-5d \n", q->address, q->size);
+		   q = q->next;
+	   }		
+   }
    printf("\n");
+   printf("Probes: %d\n\n",probes);
 }
 
 // output what is in the allocation array
