@@ -2,7 +2,7 @@
 #include "memory.h"
 
 
-int placeInSeglist(mem_ptr m);
+int placeInSegList(mem_ptr m);
 mem_ptr coalesce(mem_ptr m);
 
 extern mem_ptr Heap;
@@ -74,8 +74,8 @@ int placeInsegList(mem_ptr temp){
 	int i = 0;
 	int found = -1;
 	int size = temp->size;
-	
-	for(i; i < numLists; i++){
+	int i;
+	for(i=0; i < numLists; i++){
 		int minSize = segLists[i]->minSize;
 		int maxSize = segLists[i]->maxSize;
 		
