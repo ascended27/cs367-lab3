@@ -102,23 +102,36 @@ separate segrageted list.
 
   printf("Enter the number of segmented lists followed by the size ranges starting at 1 and ending at 0 which represents anything larger.\n");
 
-  char line[1024], *p, *e;
+  // Declare Variables
+  char line[1024];
+  char  *p, *e;
   long v;
   int i = 0;
+  
+  // Get user input as long as it fits into the line buffer
   while (fgets(line, sizeof(line), stdin)) {
+	 // Set p to the first character in the line
      p = line;
+	 // loop over the line 
      for (p = line; ; p = e) {
+		// Convert the input into a long
         v = strtol(p, &e, 10);
+		// if p and e are equal we are at the end of the line
         if (p == e)
             break;
-        if(i == 0){
-	   numLists = v;
-	   listSizes = malloc(numLists*2*sizeof(int));
-	} else if(i > 0){
-	   listSizes[i-1] = v;
+        // If this is the first iteration then get then v is the number
+		// of segregated lists we will have.
+		if(i == 0){
+			numLists = v;
+			
+			// Malloc an array of integers that will store the ranges provided
+			listSizes = malloc(numLists*2*sizeof(int));
+		} else if(i > 0){
+			// Store the range values into listSizes
+			listSizes[i-1] = v;
+		}
+		i++;
 	}
-	i++;
-     }
      break;
   }
   printf("\n");
