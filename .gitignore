@@ -36,3 +36,5 @@
 *.swp
 
 mdriver\.exe\.stackdump
+
+mm_malloc - Copy\.c
