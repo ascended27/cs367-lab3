@@ -1,5 +1,4 @@
 #include <stdlib.h>
-
 #include "memory.h"
 
 
@@ -59,9 +58,9 @@ void mm_free(mem_ptr m) {
 		}	
 		
 		int location = placeInSeglist(temp);
-		coalesce(temp);
+		temp = coalesce(temp);
 		
-		if(segLists[i]->maxSize < temp->size){
+		if(segLists[location]->maxSize < temp->size){
 			location = placeInSegList(temp);
 		}
 	
@@ -69,9 +68,10 @@ void mm_free(mem_ptr m) {
 
 }
 
-int placeInsegList(temp){
+int placeInsegList(mem_ptr temp){
 	
 	int x = 0;
+	int i = 0;
 	int found = -1;
 	int size = temp->size;
 	
@@ -83,11 +83,11 @@ int placeInsegList(temp){
 			
 			found = i;
 			
-			mem_ptr list = segList[i]->next;
+			mem_ptr list = segLists[i]->next;
 			
 			if(list == NULL){
-				segList[i]->next = temp;
-				temp->previous = segList[i];
+				segLists[i]->next = temp;
+				temp->previous = segLists[i];
 			}
 			else{
 				while(list->next){
