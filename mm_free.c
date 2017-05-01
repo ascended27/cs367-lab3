@@ -2,11 +2,16 @@
 
 #include "memory.h"
 
+
+int placeInSeglist(mem_ptr m);
+void coalesce(mem_ptr m);
+
 extern mem_ptr Heap;
 extern int numLists;
 extern mem_ptr* segLists;
 
-void mm_free(mem_ptr m) {
+
+
   /* Input: pointer to a mem_rec 
      Output:  None
 
@@ -22,6 +27,8 @@ void mm_free(mem_ptr m) {
 
 	If the input pointer is null, call error_msg(2) and return.  
   */
+void mm_free(mem_ptr m) {
+
 
 	//temporary pointer
 	mem_ptr temp = m;
@@ -90,9 +97,82 @@ void mm_free(mem_ptr m) {
 	
 	}
 	else{
+		
+		mem_ptr temp = m;
+		mem_ptr erase = NULL;
+		
+		int size = 0;
+		temp->valid = 0;
+		
+		if((temp->previous != NULL)&&(temp->next != NULL)){
+			temp->previous->next = temp->next;
+			temp->next->previous = temp->previous;
+		}
+		else if((temp->previous != NULL)&&(temp->next == NULL)){
+				temp->previous->next = NULL;
+		}
+		else if((temp->previous == NULL)&&(temp->next != NULL)){
+				temp->next->previous = NULL;
+				Heap = NULL;
+		}
+		else if((temp->previous == NULL)&&(temp->next == NULL)){
+				Heap = NULL;
+		}	
+		
+		int found = placeInSeglist(temp);
+		coalesce(temp);
 	
 	}
 
+}
+
+int placeInsegList(temp){
+	
+	int x = 0;
+	int found = -1;
+	int size = temp->size;
+	
+	for(i; i < numLists; i++){
+		int minSize = segLists[i]->minSize;
+		int maxSize = segLists[i]->maxSize;
+		
+		if(( (minSize < size) && (size <maxSize) ) ||  ( (minSize < size) && (maxSize == 0) )){
+			
+			found = i;
+			
+			mem_ptr list = segList[i]->next;
+			
+			if(list == NULL){
+				segList[i]->next = temp;
+				temp->previous = segList[i];
+			}
+			else{
+				while(list->next){
+					
+					if(temp->address < list->address){
+						break;
+					}else{
+						list = list->next;
+					}
+				}
+				
+				if(temp->address < list->address){
+					temp->previous = list->previous;
+						temp->next = list;
+						list->previous = temp;
+				}
+				else if(list->next == NULL){
+					
+					temp->next = NULL;
+					list->next = temp;
+					temp->previous = list;
+				}
+			}
+		}
+		
+	}
+	
+	return found;
 }
 
 
