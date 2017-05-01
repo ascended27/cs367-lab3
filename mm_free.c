@@ -47,17 +47,19 @@ void mm_free(mem_ptr m) {
 			temp->next->previous = temp->previous;
 		}
 		else if((temp->previous != NULL)&&(temp->next == NULL)){
-				temp->previous->next = NULL;
+				if(temp->previous)
+					temp->previous->next = NULL;
 		}
 		else if((temp->previous == NULL)&&(temp->next != NULL)){
-				temp->next->previous = NULL;
+				if(temp->previous)
+					temp->next->previous = NULL;
 				Heap = NULL;
 		}
 		else if((temp->previous == NULL)&&(temp->next == NULL)){
 				Heap = NULL;
 		}	
 		
-		int location = placeInSeglist(temp);
+		int location = placeInSegList(temp);
 		temp = coalesce(temp);
 		
 		if(segLists[location]->maxSize < temp->size){
@@ -68,13 +70,13 @@ void mm_free(mem_ptr m) {
 
 }
 
-int placeInsegList(mem_ptr temp){
+int placeInSegList(mem_ptr temp){
 	
 	int x = 0;
 	int i = 0;
 	int found = -1;
 	int size = temp->size;
-	int i;
+	
 	for(i=0; i < numLists; i++){
 		int minSize = segLists[i]->minSize;
 		int maxSize = segLists[i]->maxSize;
@@ -101,11 +103,11 @@ int placeInsegList(mem_ptr temp){
 				
 				if(temp->address < list->address){
 					temp->previous = list->previous;
-						temp->next = list;
-						list->previous = temp;
+					temp->next = list;
+					if(list->previous)
+						list->previous->next = temp;
 				}
 				else if(list->next == NULL){
-					
 					temp->next = NULL;
 					list->next = temp;
 					temp->previous = list;

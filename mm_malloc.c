@@ -137,9 +137,12 @@ mm_malloc(int size) {
 			}
 			heapPosition -> next = p;
 			p -> previous = heapPosition;
+			p -> next = NULL;
 		 }
 	}else{
 		//printf("heap is empty\n\n");
+		p -> next = NULL;
+		p -> previous = NULL;
 		Heap = p;
 	}
 	 
