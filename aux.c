@@ -59,55 +59,48 @@ int placeInSegList(mem_ptr temp){
         return found;
 }
 
-//TODO: Coalesce all seg lists not just this seglist
 void coalesce(mem_ptr p){
-   int i;
-   int found;
-   int addr;
-   int maxSize;
-   mem_ptr cont=NULL;
-   for(i = 0; i < numLists; i++){
-      found = 0;
-      mem_ptr cur = segLists[i]->next;
-      maxSize = segLists[i]-> maxSize;
-      while(cur){
-         // Check left of p
-         //if(cur -> address < p -> address){
-            mem_ptr tmp = cur;
-            addr = tmp -> size + tmp -> address;
 
-            if(addr == p -> address){
-               found = 1;
-               // Merge
-               tmp -> size += p-> size;
-               //if(p->next)
-               //   p -> next -> previous = tmp;
-               //tmp -> next = p -> next;
-               p -> next = NULL;
-               p -> previous = NULL;
-               free(p);
-               if(tmp -> size > maxSize){
-                  tmp -> previous -> next = tmp -> next;
-                  if(tmp -> next)
-                     tmp -> next -> previous = tmp -> previous;
-                  tmp -> next = NULL;
-                  tmp -> previous = NULL;
-                  placeInSegList(tmp); 
-               }
-               p = tmp;
-            }
-         if(found){
-            i--;
-            break; 
+   int done = 0;
+   int i;
+   while(!done){
+   for(i = 0; i < numLists; i++){
+
+      mem_ptr cur = segLists[i]->next;
+
+      while(cur){
+    
+         int addr = p->address + p->size;
+         int curAddr = cur->address + cur->size;
+
+         if(curAddr == p -> address ||  addr == cur -> address){
+
+            p -> size += cur -> size;
+            if(p->address > cur->address)
+               p->address = cur->address;
+            if(cur -> previous)
+               cur -> previous -> next = p;
+            if(cur -> next)
+               cur -> next -> previous = p;
+            else
+               segLists[i] -> next = NULL;
+            free(cur);
+            
+            //coalesce(p);
+            done = 0;
+           
+         }            
+            cur = cur -> next;
          }
-         cur = cur->next;
-      } 
+         if(p->previous)
+             p -> previous -> next = p -> next;
+         if(p-> next)
+             p -> next -> previous = p -> previous;
+         done = 1;
       }
-      if(!found){
-         p->next = NULL;
-         p->previous = NULL;
-         placeInSegList(p);
-      }
+
+   }
+   placeInSegList(p);   
    
 
 }
