@@ -59,6 +59,7 @@ int placeInSegList(mem_ptr temp){
         return found;
 }
 
+//TODO: Coalesce all seg lists not just this seglist
 void coalesce(int location){
 
 //temporary pointer
