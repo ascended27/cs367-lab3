@@ -3,7 +3,7 @@
 
 
 int placeInSegList(mem_ptr m);
-mem_ptr coalesce(mem_ptr m);
+mem_ptr coalesce(mem_ptr m, int location);
 
 extern mem_ptr Heap;
 extern int numLists;
@@ -34,10 +34,10 @@ void mm_free(mem_ptr m) {
 	mem_ptr erase = NULL;
 
 	//checking if there is a single list
-	if(numLists == 1){
-		coalesce(m);
-	}
-	else{
+	//if(numLists == 1){
+	//	coalesce(m);
+	//}
+	//else{
 		
 		int size = 0;
 		temp->valid = 0;
@@ -60,13 +60,13 @@ void mm_free(mem_ptr m) {
 		}	
 		
 		int location = placeInSegList(temp);
-		temp = coalesce(temp);
+		temp = coalesce(temp,location);
 		
 		if(segLists[location]->maxSize < temp->size){
 			location = placeInSegList(temp);
 		}
 	
-	}
+	//}
 
 }
 
@@ -86,32 +86,33 @@ int placeInSegList(mem_ptr temp){
 			found = i;
 			
 			mem_ptr list = segLists[i]->next;
-			
-			if(list == NULL){
-				segLists[i]->next = temp;
-				temp->previous = segLists[i];
-			}
-			else{
-				while(list->next){
+			if(list != temp){
+				if(list == NULL){
+					segLists[i]->next = temp;
+					temp->previous = segLists[i];
+				}
+				else{
+					while(list->next){
+						
+						if(temp->address < list->address){
+							break;
+						}else{
+							list = list->next;
+						}
+					}
 					
 					if(temp->address < list->address){
-						break;
-					}else{
-						list = list->next;
+						temp->previous = list->previous;
+						temp->next = list;
+						if(list->previous)
+							list->previous->next = temp;
 					}
-				}
-				
-				if(temp->address < list->address){
-					temp->previous = list->previous;
-					temp->next = list;
-					if(list->previous)
-						list->previous->next = temp;
-				}
-				else if(list->next == NULL){
-					temp->next = NULL;
-					list->next = temp;
-					temp->previous = list;
-				}
+					else if(list->next == NULL){
+						temp->next = NULL;
+						list->next = temp;
+						temp->previous = list;
+					}
+				} 
 			}
 		}
 		
@@ -120,7 +121,7 @@ int placeInSegList(mem_ptr temp){
 	return found;
 }
 
-mem_ptr coalesce(mem_ptr m){
+mem_ptr coalesce(mem_ptr m, int location){
 	
 //temporary pointer
 	mem_ptr temp = m;
@@ -131,33 +132,38 @@ mem_ptr coalesce(mem_ptr m){
 	temp->valid = 0;
 
 
-	if(temp->previous != NULL)
-		//if the previous node is free
-		if(temp->previous->valid == 0){
+	if(temp->previous != NULL){
+		// If the previous node is the dummy node then don't merge into that
+		if(temp->previous != segLists[location]){
+			//if the previous node is free
+			if(temp->previous->valid == 0){
 
-			//total size of the block of memory
-			size = temp->previous->address + temp->previous->size;
+				//total size of the block of memory
+				size = temp->previous->address + temp->previous->size;
 
-			//if the total block size is equal to the address of temp
-			if(size == temp->address){
+				//if the total block size is equal to the address of temp
+				if(size == temp->address){
 
-				erase = m;
-				temp->previous->next = temp->next;
-				temp->previous->size = temp->size + temp->previous->size;
-					
-				if(temp->next){
-					temp->next->previous = temp->previous;
-					temp = temp->previous;
+					erase = m;
+					temp->previous->next = temp->next;
+					temp->previous->size = temp->size + temp->previous->size;
+						
+					if(temp->next){
+						temp->next->previous = temp->previous;
+						temp = temp->previous;
+					}
+
+						
+					if(erase != Heap){
+						free(erase);
+						erase = NULL;
+					}
+						
 				}
-
-					
-				if(erase != Heap){
-					free(erase);
-					erase = NULL;
-				}
-					
 			}
-		}
+		} 
+			
+	}
 		
 	if(temp->next != NULL)
 		//if the next node is free
