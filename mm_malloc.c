@@ -31,7 +31,7 @@ mm_malloc(int size) {
      segregated lists has place for the block of the given size, call
      error_msg(1) and return a NULL pointer
   */
-  
+  //printf("malloc(%d)\n",size);  
   int new_size = ALIGN(size);
 
   // Allocate a new mem_ptr for our node. Probably could do this after we find a space to insert. 
@@ -104,7 +104,7 @@ mm_malloc(int size) {
 	 
 	if(!p){
 		// Out of memory
-		error_msg(2);
+		error_msg(1);
 		return NULL;
 	} 
 	 
@@ -122,30 +122,19 @@ mm_malloc(int size) {
 	// Add to the Heap
 	if(Heap){
 		 mem_ptr heapPosition = getPosition(p);
-		 if(heapPosition){
-			//printf("inserting -> %5d: size = %-5d \n\n", heapPosition->address, heapPosition->size);
-			 p -> next = heapPosition;
-			 p -> previous = heapPosition -> previous;
-			 if(heapPosition -> previous)
-				heapPosition -> previous -> next = p;
-			 heapPosition -> previous = p;
-		 } else if(heapPosition == p){
-			//printf("insert at end\n\n");
-			heapPosition = Heap;
-			while(heapPosition->next){
-				heapPosition = heapPosition -> next;
-			}
-			heapPosition -> next = p;
-			p -> previous = heapPosition;
-			p -> next = NULL;
-		 }
+		 if(heapPosition == p){
+		    p -> previous = heapPosition -> previous;
+                    p -> next = heapPosition;
+                    if(heapPosition -> previous)
+                       heapPosition -> previous -> next = p;
+                 }
 	}else{
 		//printf("heap is empty\n\n");
 		p -> next = NULL;
 		p -> previous = NULL;
 		Heap = p;
 	}
-	 
+	
 	return p;
   }
  
@@ -255,7 +244,7 @@ mem_ptr getPosition(mem_ptr node){
 	mem_ptr p = Heap;
 	if(!p){
 		printf("Empty Heap\n");
-		return node;
+		return NULL;
 	}
 	while(p -> next){
 		if(p->address > node->address){
@@ -266,6 +255,9 @@ mem_ptr getPosition(mem_ptr node){
 			p = p->next;
 	}
 	//printf("Insert at end\n\n");
-	return NULL;
+        p -> next = node;
+        node -> previous = p;
+        node -> next = NULL;
+	return -1;
 }
 

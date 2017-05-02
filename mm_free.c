@@ -3,7 +3,7 @@
 
 
 int placeInSegList(mem_ptr m);
-mem_ptr coalesce(mem_ptr m, int location);
+void coalesce(int location);
 
 extern mem_ptr Heap;
 extern int numLists;
@@ -27,47 +27,37 @@ extern mem_ptr* segLists;
 	If the input pointer is null, call error_msg(2) and return.  
 */
 void mm_free(mem_ptr m) {
-
-
-	//temporary pointer
-	mem_ptr temp = m;
-	mem_ptr erase = NULL;
-
-	//checking if there is a single list
-	//if(numLists == 1){
-	//	coalesce(m);
-	//}
-	//else{
-		
-		int size = 0;
-		temp->valid = 0;
-		
-		if((temp->previous != NULL)&&(temp->next != NULL)){
-			temp->previous->next = temp->next;
-			temp->next->previous = temp->previous;
-		}
-		else if((temp->previous != NULL)&&(temp->next == NULL)){
-				if(temp->previous)
-					temp->previous->next = NULL;
-		}
-		else if((temp->previous == NULL)&&(temp->next != NULL)){
-				if(temp->previous)
-					temp->next->previous = NULL;
-				Heap = NULL;
-		}
-		else if((temp->previous == NULL)&&(temp->next == NULL)){
-				Heap = NULL;
-		}	
-		
-		int location = placeInSegList(temp);
-		temp = coalesce(temp,location);
-		
-		if(segLists[location]->maxSize < temp->size){
-			location = placeInSegList(temp);
-		}
+   //temporary pointer
+   mem_ptr temp = m;
+   mem_ptr erase = NULL;
+   if(m){
+      //printf("free(%d)\n",m->size);    
+      int size = 0;
+      temp->valid = 0;
 	
-	//}
-
+      if((temp->previous != NULL)&&(temp->next != NULL)){
+   	   temp->previous->next = temp->next;
+	   temp->next->previous = temp->previous;
+      }
+      else if((temp->previous != NULL)&&(temp->next == NULL)){
+  	   temp->previous->next = NULL;
+      }
+      else if((temp->previous == NULL)&&(temp->next != NULL)){
+	   temp->next->previous = NULL;
+	   Heap = temp->next;
+   	   temp->next = NULL;
+      }
+      else if((temp->previous == NULL)&&(temp->next == NULL)){
+           Heap = NULL;
+      }	
+      temp -> next = NULL;
+      temp -> previous = NULL;
+      int location = placeInSegList(temp);
+      if(location != -1)
+         coalesce(location);
+   } else{
+      error_msg(2);
+   }	
 }
 
 int placeInSegList(mem_ptr temp){
@@ -100,12 +90,12 @@ int placeInSegList(mem_ptr temp){
 							list = list->next;
 						}
 					}
-					
 					if(temp->address < list->address){
 						temp->previous = list->previous;
 						temp->next = list;
 						if(list->previous)
 							list->previous->next = temp;
+						list -> previous = temp;
 					}
 					else if(list->next == NULL){
 						temp->next = NULL;
@@ -121,77 +111,64 @@ int placeInSegList(mem_ptr temp){
 	return found;
 }
 
-mem_ptr coalesce(mem_ptr m, int location){
+void coalesce(int location){
 	
 //temporary pointer
-	mem_ptr temp = m;
 	mem_ptr erase = NULL;
 	
 	int size = 0;
+	int minSize = segLists[location] -> minSize;
+	int maxSize = segLists[location] -> maxSize;
+        mem_ptr tmp = NULL;
+	mem_ptr p = segLists[location]->next;
+  
+        //loop over seg list
+	while(p->next){
 
-	temp->valid = 0;
+           size = p->address + p->size;	   
+           if(size == p->next->address){
+              p -> size += p->next->size;
+	      erase = p -> next;
+              // Erase the merged node
+	      if(erase){
+		p -> next = erase -> next;
+	        if(erase->next){
+		   erase -> next -> previous = p;	    
+                   tmp = erase->next;
+                }  
+              }
 
+	      // Remove p from this list
+	      p -> previous -> next = p -> next;
+              if(p -> next){
+                 p -> next -> previous = p -> previous;
+              }
+              p -> next = NULL;
+              p -> previous = NULL;
 
-	if(temp->previous != NULL){
-		// If the previous node is the dummy node then don't merge into that
-		if(temp->previous != segLists[location]){
-			//if the previous node is free
-			if(temp->previous->valid == 0){
+              // Place in new list
+	      if(p->size > maxSize){
+		int loc = placeInSegList(p);
+                coalesce(loc);
+              }
 
-				//total size of the block of memory
-				size = temp->previous->address + temp->previous->size;
-
-				//if the total block size is equal to the address of temp
-				if(size == temp->address){
-
-					erase = m;
-					temp->previous->next = temp->next;
-					temp->previous->size = temp->size + temp->previous->size;
-						
-					if(temp->next){
-						temp->next->previous = temp->previous;
-						temp = temp->previous;
-					}
-
-						
-					if(erase != Heap){
-						free(erase);
-						erase = NULL;
-					}
-						
-				}
-			}
-		} 
-			
+	      // Remove erase from this list
+	      if(erase){
+		free(erase);
+              } else {
+                 break;
+              }
+              p = tmp;
+           }
+	   if(!tmp)
+		break;
+	   if(!p)
+		break;
+           if(tmp)
+	      p = tmp;
+           else 
+              p = p -> next;
 	}
-		
-	if(temp->next != NULL)
-		//if the next node is free
-		if(temp->next->valid == 0){
-		//total size of the memory block
-			size = temp->address + temp->size;
-
-			//if the total block size is equal to the address of the next node				
-			if(size == temp->next->address){
-				erase = temp->next;
-				temp->size = temp->size + temp->next->size;
-					
-				if(temp->next->next){
-					temp->next->next->previous = temp;
-					temp->next = temp->next->next;
-				}
-				else{
-					temp->next = NULL;
-				}
-
-				if(erase != Heap){
-					free(erase);
-					erase = NULL;
-				}
-			}
-		}
-			
-	return temp;
 }
 
 

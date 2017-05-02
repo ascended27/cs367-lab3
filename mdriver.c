@@ -206,7 +206,7 @@ void mm_dump() {
 	   }		
    }
    printf("\n");
-   printf("Probes: %d\n\n",probes);
+   //printf("Probes: %d\n\n",probes);
 }
 
 // output what is in the allocation array
