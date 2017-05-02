@@ -32,6 +32,21 @@ mem_ptr mm_realloc(mem_ptr m, int size) {
        Remember that the free blocks in each segregated list must be address-ordered at all times.      
 
   */
+   if(!m){
+      error_msg(1);
+      return NULL;
+   }
+
+   if(m -> size > size){
+      // Split m, free the new node, and return m
+   }
+
+   if(m -> size < size){
+      // If there is a block neighboring m's address then merge, split off excess, free excess
+
+      // Else then free m and then malloc a new block
+   }
+
    int new_size = ALIGN(size);
    return NULL;
 }
