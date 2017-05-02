@@ -60,64 +60,56 @@ int placeInSegList(mem_ptr temp){
 }
 
 //TODO: Coalesce all seg lists not just this seglist
-void coalesce(int location){
+void coalesce(mem_ptr p){
+   int i;
+   int found;
+   int addr;
+   int maxSize;
+   mem_ptr cont=NULL;
+   for(i = 0; i < numLists; i++){
+      found = 0;
+      mem_ptr cur = segLists[i]->next;
+      maxSize = segLists[i]-> maxSize;
+      while(cur){
+         // Check left of p
+         //if(cur -> address < p -> address){
+            mem_ptr tmp = cur;
+            addr = tmp -> size + tmp -> address;
 
-//temporary pointer
-        mem_ptr erase = NULL;
+            if(addr == p -> address){
+               found = 1;
+               // Merge
+               tmp -> size += p-> size;
+               //if(p->next)
+               //   p -> next -> previous = tmp;
+               //tmp -> next = p -> next;
+               p -> next = NULL;
+               p -> previous = NULL;
+               free(p);
+               if(tmp -> size > maxSize){
+                  tmp -> previous -> next = tmp -> next;
+                  if(tmp -> next)
+                     tmp -> next -> previous = tmp -> previous;
+                  tmp -> next = NULL;
+                  tmp -> previous = NULL;
+                  placeInSegList(tmp); 
+               }
+               p = tmp;
+            }
+         if(found){
+            i--;
+            break; 
+         }
+         cur = cur->next;
+      } 
+      }
+      if(!found){
+         p->next = NULL;
+         p->previous = NULL;
+         placeInSegList(p);
+      }
+   
 
-        int size = 0;
-        int minSize = segLists[location] -> minSize;
-        int maxSize = segLists[location] -> maxSize;
-        mem_ptr tmp = NULL;
-        mem_ptr p = segLists[location]->next;
-
-        //loop over seg list
-        while(p->next){
-
-           size = p->address + p->size;
-           if(size == p->next->address){
-              p -> size += p->next->size;
-              erase = p -> next;
-              // Erase the merged node
-              if(erase){
-                p -> next = erase -> next;
-                if(erase->next){
-                   erase -> next -> previous = p;
-                   tmp = erase->next;
-                }
-              }
-
-              // Remove p from this list
-              p -> previous -> next = p -> next;
-              if(p -> next){
-                 p -> next -> previous = p -> previous;
-              }
-              p -> next = NULL;
-              p -> previous = NULL;
-
-              // Place in new list
-              if(p->size > maxSize){
-                int loc = placeInSegList(p);
-                coalesce(loc);
-              }
-
-              // Remove erase from this list
-              if(erase){
-                free(erase);
-              } else {
-                 break;
-              }
-              p = tmp;
-           }
-           if(!tmp)
-                break;
-           if(!p)
-                break;
-           if(tmp)
-              p = tmp;
-           else
-              p = p -> next;
-        }
 }
 
 // FROM MM_MALLOC.C

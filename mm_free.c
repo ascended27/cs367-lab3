@@ -49,9 +49,8 @@ void mm_free(mem_ptr m) {
       }	
       temp -> next = NULL;
       temp -> previous = NULL;
-      int location = placeInSegList(temp);
-      if(location != -1)
-         coalesce(location);
+      //int location = placeInSegList(temp);
+      coalesce(temp);
    } else{
       error_msg(2);
    }	
